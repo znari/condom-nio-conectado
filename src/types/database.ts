@@ -17,6 +17,9 @@ export interface Condominium {
   email: string;
   logo_url: string | null;
   status: CondominiumStatus;
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+  rejection_reason: string | null;
   created_at: string;
   updated_at: string;
 }

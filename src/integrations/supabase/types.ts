@@ -71,6 +71,9 @@ export type Database = {
           logo_url: string | null
           name: string
           phone: string
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
           status: Database["public"]["Enums"]["condominium_status"]
           updated_at: string
         }
@@ -83,6 +86,9 @@ export type Database = {
           logo_url?: string | null
           name: string
           phone: string
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           status?: Database["public"]["Enums"]["condominium_status"]
           updated_at?: string
         }
@@ -95,6 +101,9 @@ export type Database = {
           logo_url?: string | null
           name?: string
           phone?: string
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           status?: Database["public"]["Enums"]["condominium_status"]
           updated_at?: string
         }

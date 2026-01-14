@@ -17,7 +17,7 @@ import { ExportPDFButton } from '@/components/dashboard/ExportPDFButton';
 import { AlertsPanel } from '@/components/dashboard/AlertsPanel';
 import { ForecastChart } from '@/components/dashboard/ForecastChart';
 import { DemandForecastCard } from '@/components/dashboard/DemandForecastCard';
-import { format, subMonths, startOfMonth, endOfMonth, subYears, differenceInDays } from 'date-fns';
+import { format, subMonths, startOfMonth, endOfMonth, subYears, differenceInDays, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { SERVICE_CATEGORY_LABELS, ServiceCategory } from '@/types/database';
 
@@ -323,13 +323,21 @@ export default function ManagerDashboard() {
   };
 
   if (condominium?.status === 'pending') {
+    const waitTime = formatDistanceToNow(new Date(condominium.created_at), { 
+      locale: ptBR, 
+      addSuffix: true 
+    });
+    
     return (
       <DashboardLayout title="Dashboard">
         <Alert className="border-warning bg-warning/10">
-          <AlertTriangle className="h-4 w-4 text-warning" />
+          <Clock className="h-4 w-4 text-warning" />
           <AlertTitle>Aguardando Aprovação</AlertTitle>
-          <AlertDescription>
-            Seu cadastro está em análise. Você receberá uma notificação assim que for aprovado.
+          <AlertDescription className="space-y-2">
+            <p>Seu cadastro está em análise {waitTime}.</p>
+            <p className="text-sm text-muted-foreground">
+              Você receberá uma notificação assim que for aprovado.
+            </p>
           </AlertDescription>
         </Alert>
       </DashboardLayout>
@@ -342,8 +350,17 @@ export default function ManagerDashboard() {
         <Alert variant="destructive">
           <AlertTriangle className="h-4 w-4" />
           <AlertTitle>Cadastro Rejeitado</AlertTitle>
-          <AlertDescription>
-            Infelizmente seu cadastro foi rejeitado. Entre em contato com o suporte para mais informações.
+          <AlertDescription className="space-y-2">
+            <p>Infelizmente seu cadastro foi rejeitado.</p>
+            {condominium.rejection_reason && (
+              <div className="mt-2 rounded-md bg-destructive/10 p-3">
+                <p className="font-medium">Motivo:</p>
+                <p>{condominium.rejection_reason}</p>
+              </div>
+            )}
+            <p className="mt-2 text-sm">
+              Entre em contato com o suporte para mais informações.
+            </p>
           </AlertDescription>
         </Alert>
       </DashboardLayout>

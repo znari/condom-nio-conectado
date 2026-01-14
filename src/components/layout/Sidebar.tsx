@@ -6,10 +6,8 @@ import {
   LayoutDashboard,
   Building2,
   Users,
-  Wrench,
   FileText,
   BarChart3,
-  Bell,
   Settings,
   LogOut,
   ChevronLeft,
@@ -55,9 +53,19 @@ export function Sidebar() {
       <div className="flex h-full flex-col">
         {/* Header */}
         <div className="flex h-16 items-center justify-between border-b border-sidebar-border px-4">
-          {!collapsed && (
+          {collapsed ? (
+            <img 
+              src="/favicon.png" 
+              alt="ZelaSync" 
+              className="h-8 w-8 mx-auto"
+            />
+          ) : (
             <div className="flex items-center gap-2">
-              <Wrench className="h-6 w-6 text-sidebar-primary" />
+              <img 
+                src="/favicon.png" 
+                alt="ZelaSync Logo" 
+                className="h-8 w-8"
+              />
               <span className="text-lg font-semibold">ZelaSync</span>
             </div>
           )}

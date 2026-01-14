@@ -21,6 +21,7 @@ import Providers from "./pages/manager/Providers";
 import ServiceCalls from "./pages/manager/ServiceCalls";
 import ServiceCallNew from "./pages/manager/ServiceCallNew";
 import ServiceCallDetails from "./pages/manager/ServiceCallDetails";
+import Settings from "./pages/manager/Settings";
 
 import NotFound from "./pages/NotFound";
 
@@ -96,6 +97,14 @@ const App = () => (
               element={
                 <ProtectedRoute allowedRoles={['manager']}>
                   <Providers />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/configuracoes"
+              element={
+                <ProtectedRoute allowedRoles={['manager']}>
+                  <Settings />
                 </ProtectedRoute>
               }
             />

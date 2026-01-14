@@ -13,6 +13,7 @@ import { CategoryReport } from '@/components/reports/CategoryReport';
 import { ProviderReport } from '@/components/reports/ProviderReport';
 import { CostReport } from '@/components/reports/CostReport';
 import { EfficiencyReport } from '@/components/reports/EfficiencyReport';
+import { PurchaseReport } from '@/components/reports/PurchaseReport';
 import { ExportMultiFormat } from '@/components/reports/ExportMultiFormat';
 import { 
   FileText, 
@@ -20,10 +21,11 @@ import {
   Users, 
   DollarSign, 
   Clock, 
-  Download 
+  Download,
+  ShoppingCart,
 } from 'lucide-react';
 import { startOfMonth, subMonths, endOfMonth } from 'date-fns';
-import { ServiceCall, ServiceProvider } from '@/types/database';
+import { ServiceCall, ServiceProvider, PurchaseRequest } from '@/types/database';
 
 export default function Reports() {
   const { profile } = useAuth();
@@ -101,6 +103,26 @@ export default function Reports() {
     enabled: !!profile?.condominium_id,
   });
 
+  // Fetch purchase requests
+  const { data: purchases = [], isLoading: purchasesLoading } = useQuery({
+    queryKey: ['reports-purchases', profile?.condominium_id, filters],
+    queryFn: async () => {
+      if (!profile?.condominium_id) return [];
+
+      const { data, error } = await supabase
+        .from('purchase_requests')
+        .select('*')
+        .eq('condominium_id', profile.condominium_id)
+        .gte('created_at', filters.startDate.toISOString())
+        .lte('created_at', filters.endDate.toISOString())
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data as PurchaseRequest[];
+    },
+    enabled: !!profile?.condominium_id,
+  });
+
   // Fetch condominium for export header
   const { data: condominium } = useQuery({
     queryKey: ['condominium', profile?.condominium_id],
@@ -159,7 +181,7 @@ export default function Reports() {
 
         {/* Report Tabs */}
         <Tabs defaultValue="executive" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:inline-grid">
+          <TabsList className="grid w-full grid-cols-6 lg:w-auto lg:inline-grid">
             <TabsTrigger value="executive" className="gap-2">
               <FileText className="w-4 h-4 hidden sm:inline" />
               Resumo
@@ -179,6 +201,10 @@ export default function Reports() {
             <TabsTrigger value="efficiency" className="gap-2">
               <Clock className="w-4 h-4 hidden sm:inline" />
               Eficiência
+            </TabsTrigger>
+            <TabsTrigger value="purchases" className="gap-2">
+              <ShoppingCart className="w-4 h-4 hidden sm:inline" />
+              Compras
             </TabsTrigger>
           </TabsList>
 
@@ -200,6 +226,10 @@ export default function Reports() {
 
           <TabsContent value="efficiency">
             <EfficiencyReport calls={calls} />
+          </TabsContent>
+
+          <TabsContent value="purchases">
+            <PurchaseReport purchases={purchases} filters={filters} />
           </TabsContent>
         </Tabs>
       </div>

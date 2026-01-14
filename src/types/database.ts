@@ -12,6 +12,19 @@ export type PhotoType = 'initial' | 'completion';
 export type PurchaseRequestStatus = 'pending' | 'approved' | 'rejected' | 'purchased' | 'cancelled';
 export type PurchaseCategory = 'limpeza' | 'manutencao' | 'equipamento' | 'ferramentas' | 'jardinagem' | 'eletrico' | 'hidraulico' | 'seguranca' | 'escritorio' | 'outros';
 export type PurchasePriority = 'low' | 'medium' | 'high' | 'urgent';
+export type AttachmentType = 'image' | 'pdf' | 'quote';
+
+// Interface for purchase request attachment
+export interface PurchaseRequestAttachment {
+  id: string;
+  purchase_request_id: string;
+  file_url: string;
+  file_name: string;
+  file_type: AttachmentType;
+  file_size: number | null;
+  uploaded_by: string;
+  uploaded_at: string;
+}
 
 export interface Condominium {
   id: string;

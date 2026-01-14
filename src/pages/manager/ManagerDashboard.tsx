@@ -1,5 +1,4 @@
 import { useRef, useState } from 'react';
-// Dashboard with charts, filters and PDF export
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -11,10 +10,13 @@ import { CategoryPieChart } from '@/components/dashboard/CategoryPieChart';
 import { MonthlyEvolutionChart } from '@/components/dashboard/MonthlyEvolutionChart';
 import { ProviderRankingChart } from '@/components/dashboard/ProviderRankingChart';
 import { CostComparisonChart } from '@/components/dashboard/CostComparisonChart';
+import { ResolutionTimeChart } from '@/components/dashboard/ResolutionTimeChart';
+import { PeriodComparisonCard } from '@/components/dashboard/PeriodComparisonCard';
 import { DateRangeFilter } from '@/components/dashboard/DateRangeFilter';
 import { ExportPDFButton } from '@/components/dashboard/ExportPDFButton';
-import { format, subMonths, startOfMonth, endOfMonth } from 'date-fns';
+import { format, subMonths, startOfMonth, endOfMonth, subYears, differenceInDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { SERVICE_CATEGORY_LABELS, ServiceCategory } from '@/types/database';
 
 export default function ManagerDashboard() {
   const { profile } = useAuth();
@@ -209,6 +211,110 @@ export default function ManagerDashboard() {
     enabled: !!profile?.condominium_id,
   });
 
+  // Query for resolution time by category
+  const { data: resolutionData = [] } = useQuery({
+    queryKey: ['resolution-time', profile?.condominium_id, dateRange.start.toISOString(), dateRange.end.toISOString()],
+    queryFn: async () => {
+      if (!profile?.condominium_id) return [];
+
+      const { data } = await supabase
+        .from('service_calls')
+        .select('category, created_at, updated_at')
+        .eq('condominium_id', profile.condominium_id)
+        .eq('status', 'completed')
+        .gte('created_at', dateRange.start.toISOString())
+        .lte('created_at', dateRange.end.toISOString());
+
+      if (!data || data.length === 0) return [];
+
+      // Group by category and calculate average resolution time
+      const categoryMap: Record<string, { totalDays: number; count: number }> = {};
+      
+      data.forEach((call) => {
+        const createdAt = new Date(call.created_at);
+        const updatedAt = new Date(call.updated_at);
+        const days = differenceInDays(updatedAt, createdAt) || 1; // Minimum 1 day
+        
+        if (!categoryMap[call.category]) {
+          categoryMap[call.category] = { totalDays: 0, count: 0 };
+        }
+        
+        categoryMap[call.category].totalDays += days;
+        categoryMap[call.category].count++;
+      });
+
+      return Object.entries(categoryMap).map(([category, stats]) => ({
+        category,
+        categoryLabel: SERVICE_CATEGORY_LABELS[category as ServiceCategory] || category,
+        averageDays: stats.totalDays / stats.count,
+        totalCalls: stats.count,
+      }));
+    },
+    enabled: !!profile?.condominium_id,
+  });
+
+  // Calculate previous period dates for comparison
+  const periodDurationDays = differenceInDays(dateRange.end, dateRange.start);
+  const previousPeriodEnd = new Date(dateRange.start);
+  previousPeriodEnd.setDate(previousPeriodEnd.getDate() - 1);
+  const previousPeriodStart = new Date(previousPeriodEnd);
+  previousPeriodStart.setDate(previousPeriodStart.getDate() - periodDurationDays);
+
+  // Query for period comparison
+  const { data: periodComparison } = useQuery({
+    queryKey: ['period-comparison', profile?.condominium_id, dateRange.start.toISOString(), dateRange.end.toISOString()],
+    queryFn: async () => {
+      if (!profile?.condominium_id) return null;
+
+      // Fetch current period data
+      const { data: currentCalls } = await supabase
+        .from('service_calls')
+        .select('status, created_at, updated_at, actual_value')
+        .eq('condominium_id', profile.condominium_id)
+        .gte('created_at', dateRange.start.toISOString())
+        .lte('created_at', dateRange.end.toISOString());
+
+      // Fetch previous period data
+      const { data: previousCalls } = await supabase
+        .from('service_calls')
+        .select('status, created_at, updated_at, actual_value')
+        .eq('condominium_id', profile.condominium_id)
+        .gte('created_at', previousPeriodStart.toISOString())
+        .lte('created_at', previousPeriodEnd.toISOString());
+
+      const calculateStats = (calls: typeof currentCalls) => {
+        if (!calls || calls.length === 0) {
+          return { totalCalls: 0, completedCalls: 0, avgResolutionDays: 0, totalCost: 0 };
+        }
+
+        const completed = calls.filter(c => c.status === 'completed');
+        let totalDays = 0;
+        let totalCost = 0;
+
+        completed.forEach(call => {
+          const days = differenceInDays(new Date(call.updated_at), new Date(call.created_at)) || 1;
+          totalDays += days;
+          totalCost += Number(call.actual_value) || 0;
+        });
+
+        return {
+          totalCalls: calls.length,
+          completedCalls: completed.length,
+          avgResolutionDays: completed.length > 0 ? totalDays / completed.length : 0,
+          totalCost,
+        };
+      };
+
+      return {
+        current: calculateStats(currentCalls),
+        previous: calculateStats(previousCalls),
+        currentLabel: `${format(dateRange.start, 'dd/MM/yy')} - ${format(dateRange.end, 'dd/MM/yy')}`,
+        previousLabel: `${format(previousPeriodStart, 'dd/MM/yy')} - ${format(previousPeriodEnd, 'dd/MM/yy')}`,
+      };
+    },
+    enabled: !!profile?.condominium_id,
+  });
+
   const handleDateRangeChange = (start: Date, end: Date) => {
     setDateRange({ start, end });
   };
@@ -310,6 +416,16 @@ export default function ManagerDashboard() {
             ))}
           </div>
 
+          {/* Period Comparison */}
+          {periodComparison && (
+            <PeriodComparisonCard
+              currentPeriod={periodComparison.current}
+              previousPeriod={periodComparison.previous}
+              currentLabel={periodComparison.currentLabel}
+              previousLabel={periodComparison.previousLabel}
+            />
+          )}
+
           {/* Charts Row 1 */}
           <div className="grid gap-4 md:grid-cols-2">
             <CategoryPieChart data={categoryData} />
@@ -319,8 +435,11 @@ export default function ManagerDashboard() {
           {/* Charts Row 2 */}
           <div className="grid gap-4 md:grid-cols-2">
             <CostComparisonChart data={costData} />
-            <ProviderRankingChart data={providerRanking} />
+            <ResolutionTimeChart data={resolutionData} />
           </div>
+
+          {/* Provider Ranking */}
+          <ProviderRankingChart data={providerRanking} />
         </div>
       </div>
     </DashboardLayout>

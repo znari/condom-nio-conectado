@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -14,6 +14,9 @@ import { ResolutionTimeChart } from '@/components/dashboard/ResolutionTimeChart'
 import { PeriodComparisonCard } from '@/components/dashboard/PeriodComparisonCard';
 import { DateRangeFilter } from '@/components/dashboard/DateRangeFilter';
 import { ExportPDFButton } from '@/components/dashboard/ExportPDFButton';
+import { AlertsPanel } from '@/components/dashboard/AlertsPanel';
+import { ForecastChart } from '@/components/dashboard/ForecastChart';
+import { DemandForecastCard } from '@/components/dashboard/DemandForecastCard';
 import { format, subMonths, startOfMonth, endOfMonth, subYears, differenceInDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { SERVICE_CATEGORY_LABELS, ServiceCategory } from '@/types/database';
@@ -416,6 +419,9 @@ export default function ManagerDashboard() {
             ))}
           </div>
 
+          {/* Resolution Time Alerts */}
+          <AlertsPanel />
+
           {/* Period Comparison */}
           {periodComparison && (
             <PeriodComparisonCard
@@ -436,6 +442,24 @@ export default function ManagerDashboard() {
           <div className="grid gap-4 md:grid-cols-2">
             <CostComparisonChart data={costData} />
             <ResolutionTimeChart data={resolutionData} />
+          </div>
+
+          {/* Forecast Section */}
+          <div className="grid gap-4 md:grid-cols-2">
+            <ForecastChart 
+              historicalData={monthlyData.map(m => ({ month: m.month, value: m.opened }))}
+              title="Previsão de Demanda"
+              valueLabel="Chamados"
+            />
+            <DemandForecastCard
+              categoryData={categoryData}
+              historicalData={monthlyData.map(m => ({ month: m.month, value: m.opened }))}
+              estimatedCostPerCall={
+                costData.length > 0 && monthlyData.reduce((sum, m) => sum + m.opened, 0) > 0
+                  ? costData.reduce((sum, m) => sum + m.actual, 0) / monthlyData.reduce((sum, m) => sum + m.opened, 0)
+                  : undefined
+              }
+            />
           </div>
 
           {/* Provider Ranking */}

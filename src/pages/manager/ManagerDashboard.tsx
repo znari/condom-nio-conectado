@@ -5,6 +5,11 @@ import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { FileText, Clock, CheckCircle, Users, AlertTriangle } from 'lucide-react';
+import { CategoryPieChart } from '@/components/dashboard/CategoryPieChart';
+import { MonthlyEvolutionChart } from '@/components/dashboard/MonthlyEvolutionChart';
+import { ProviderRankingChart } from '@/components/dashboard/ProviderRankingChart';
+import { format, subMonths, startOfMonth, endOfMonth } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 export default function ManagerDashboard() {
   const { profile } = useAuth();
@@ -44,6 +49,91 @@ export default function ManagerDashboard() {
       const totalProviders = providers?.length || 0;
 
       return { openCalls, inProgressCalls, completedCalls, totalProviders };
+    },
+    enabled: !!profile?.condominium_id,
+  });
+
+  // Query for calls by category
+  const { data: categoryData = [] } = useQuery({
+    queryKey: ['calls-by-category', profile?.condominium_id],
+    queryFn: async () => {
+      if (!profile?.condominium_id) return [];
+      const { data } = await supabase
+        .from('service_calls')
+        .select('category')
+        .eq('condominium_id', profile.condominium_id);
+
+      if (!data) return [];
+
+      const counts: Record<string, number> = {};
+      data.forEach((call) => {
+        counts[call.category] = (counts[call.category] || 0) + 1;
+      });
+
+      return Object.entries(counts).map(([category, count]) => ({
+        category,
+        count,
+      }));
+    },
+    enabled: !!profile?.condominium_id,
+  });
+
+  // Query for monthly evolution
+  const { data: monthlyData = [] } = useQuery({
+    queryKey: ['monthly-evolution', profile?.condominium_id],
+    queryFn: async () => {
+      if (!profile?.condominium_id) return [];
+      
+      const sixMonthsAgo = subMonths(new Date(), 5);
+      const startDate = startOfMonth(sixMonthsAgo).toISOString();
+
+      const { data } = await supabase
+        .from('service_calls')
+        .select('created_at, status')
+        .eq('condominium_id', profile.condominium_id)
+        .gte('created_at', startDate);
+
+      if (!data) return [];
+
+      // Generate last 6 months
+      const months: { month: string; opened: number; completed: number }[] = [];
+      for (let i = 5; i >= 0; i--) {
+        const date = subMonths(new Date(), i);
+        const monthStart = startOfMonth(date);
+        const monthEnd = endOfMonth(date);
+        const monthLabel = format(date, 'MMM', { locale: ptBR });
+
+        const monthCalls = data.filter((call) => {
+          const callDate = new Date(call.created_at);
+          return callDate >= monthStart && callDate <= monthEnd;
+        });
+
+        months.push({
+          month: monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1),
+          opened: monthCalls.length,
+          completed: monthCalls.filter((c) => c.status === 'completed').length,
+        });
+      }
+
+      return months;
+    },
+    enabled: !!profile?.condominium_id,
+  });
+
+  // Query for provider ranking
+  const { data: providerRanking = [] } = useQuery({
+    queryKey: ['provider-ranking', profile?.condominium_id],
+    queryFn: async () => {
+      if (!profile?.condominium_id) return [];
+      const { data } = await supabase
+        .from('service_providers')
+        .select('name, average_rating, total_ratings')
+        .eq('condominium_id', profile.condominium_id)
+        .gt('total_ratings', 0)
+        .order('average_rating', { ascending: false })
+        .limit(5);
+
+      return data || [];
     },
     enabled: !!profile?.condominium_id,
   });
@@ -129,19 +219,14 @@ export default function ManagerDashboard() {
           ))}
         </div>
 
-        {/* Welcome Card */}
-        <Card className="border-border/50">
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <h2 className="text-xl font-semibold">
-                {condominium?.name || 'Bem-vindo'}
-              </h2>
-              <p className="mt-2 text-muted-foreground">
-                Gerencie chamados de manutenção e prestadores de serviço.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Charts Row */}
+        <div className="grid gap-4 md:grid-cols-2">
+          <CategoryPieChart data={categoryData} />
+          <MonthlyEvolutionChart data={monthlyData} />
+        </div>
+
+        {/* Provider Ranking */}
+        <ProviderRankingChart data={providerRanking} />
       </div>
     </DashboardLayout>
   );

@@ -1,1 +1,4 @@
 project_id = "fyrsrmmmdwsqnjxyfzfm"
+
+[functions.validate-temp-link]
+verify_jwt = false

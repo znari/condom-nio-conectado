@@ -78,69 +78,50 @@ export default function ProviderQuote() {
 
   const fetchQuoteData = async () => {
     try {
-      // Fetch temporary link
-      const { data: linkData, error: linkError } = await supabase
-        .from('temporary_links')
-        .select('*')
-        .eq('token', token)
-        .eq('type', 'quote')
-        .single();
+      // Use edge function to validate token and get data securely
+      const { data: response, error } = await supabase.functions.invoke('validate-temp-link', {
+        body: null,
+        headers: {},
+      });
 
-      if (linkError || !linkData) {
+      // Handle the case where we need to pass token as query param
+      const edgeFunctionUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/validate-temp-link?token=${token}&action=validate`;
+      
+      const res = await fetch(edgeFunctionUrl, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const result = await res.json();
+
+      if (result.state === 'not_found') {
         setPageState('not_found');
         return;
       }
 
-      // Check if expired
-      if (new Date(linkData.expires_at) < new Date()) {
+      if (result.state === 'expired') {
         setPageState('expired');
         return;
       }
 
-      // Check if already used
-      if (linkData.used_at) {
+      if (result.state === 'used') {
         setPageState('used');
         return;
       }
 
-      // Fetch service call
-      const { data: callData, error: callError } = await supabase
-        .from('service_calls')
-        .select('*')
-        .eq('id', linkData.service_call_id)
-        .single();
-
-      if (callError || !callData) {
+      if (result.state === 'valid') {
+        setData({
+          serviceCall: result.serviceCall as QuoteData['serviceCall'],
+          condominium: result.condominium,
+          photos: result.photos || [],
+          temporaryLink: result.temporaryLink,
+        });
+        setPageState('valid');
+      } else {
         setPageState('not_found');
-        return;
       }
-
-      // Fetch condominium
-      const { data: condoData, error: condoError } = await supabase
-        .from('condominiums')
-        .select('name')
-        .eq('id', callData.condominium_id)
-        .single();
-
-      if (condoError || !condoData) {
-        setPageState('not_found');
-        return;
-      }
-
-      // Fetch photos
-      const { data: photosData } = await supabase
-        .from('service_call_photos')
-        .select('photo_url')
-        .eq('service_call_id', callData.id)
-        .eq('type', 'initial');
-
-      setData({
-        serviceCall: callData as QuoteData['serviceCall'],
-        condominium: condoData,
-        photos: photosData || [],
-        temporaryLink: linkData,
-      });
-      setPageState('valid');
     } catch (error) {
       console.error('Error fetching quote data:', error);
       setPageState('not_found');
@@ -193,50 +174,33 @@ export default function ProviderQuote() {
 
     setSubmitting(true);
     try {
-      // Update service call with quote
-      const { error: updateError } = await supabase
-        .from('service_calls')
-        .update({
+      // Use edge function to submit quote securely
+      const edgeFunctionUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/validate-temp-link?token=${token}&action=submit`;
+      
+      const res = await fetch(edgeFunctionUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
           estimated_value: value,
           estimated_time: estimatedTime,
           estimated_completion_date: format(completionDate, 'yyyy-MM-dd'),
           completion_notes: observations || null,
-          status: 'awaiting_approval',
-        })
-        .eq('id', data!.serviceCall.id);
+        }),
+      });
 
-      if (updateError) throw updateError;
+      const result = await res.json();
 
-      // Mark link as used
-      const { error: linkError } = await supabase
-        .from('temporary_links')
-        .update({ used_at: new Date().toISOString() })
-        .eq('id', data!.temporaryLink.id);
-
-      if (linkError) throw linkError;
-
-      // Create notification for manager
-      const { data: creatorData } = await supabase
-        .from('service_calls')
-        .select('created_by')
-        .eq('id', data!.serviceCall.id)
-        .single();
-
-      if (creatorData?.created_by) {
-        await supabase.from('notifications').insert({
-          user_id: creatorData.created_by,
-          type: 'quote_received',
-          title: 'Novo orçamento recebido',
-          message: `O prestador enviou um orçamento de R$ ${estimatedValue} para o chamado "${data!.serviceCall.title}"`,
-          data: { service_call_id: data!.serviceCall.id },
-        });
+      if (!res.ok || result.error) {
+        throw new Error(result.error || 'Erro ao enviar orçamento');
       }
 
       setPageState('success');
       toast.success("Orçamento enviado com sucesso!");
     } catch (error) {
       console.error('Error submitting quote:', error);
-      toast.error("Erro ao enviar orçamento. Tente novamente.");
+      toast.error(error instanceof Error ? error.message : "Erro ao enviar orçamento. Tente novamente.");
     } finally {
       setSubmitting(false);
     }
@@ -373,7 +337,7 @@ export default function ProviderQuote() {
                 <div>
                   <p className="text-sm text-muted-foreground">Categoria</p>
                   <p className="font-medium">
-                    {SERVICE_CATEGORY_LABELS[data?.serviceCall.category || 'electrical']}
+                    {SERVICE_CATEGORY_LABELS[data?.serviceCall.category || 'outros']}
                   </p>
                 </div>
               </div>

@@ -71,11 +71,14 @@ export function PhotoUpload({
 
         if (uploadError) throw uploadError;
 
-        const { data: urlData } = supabase.storage
+        // Generate signed URL instead of public URL (bucket is private)
+        const { data: signedUrlData } = await supabase.storage
           .from("service-call-photos")
-          .getPublicUrl(fileName);
+          .createSignedUrl(fileName, 86400); // 24 hour expiry
 
-        uploadedUrls.push(urlData.publicUrl);
+        if (signedUrlData?.signedUrl) {
+          uploadedUrls.push(signedUrlData.signedUrl);
+        }
       }
 
       setPhotos(uploadedUrls);

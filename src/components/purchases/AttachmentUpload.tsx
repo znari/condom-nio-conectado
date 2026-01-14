@@ -79,11 +79,12 @@ export function AttachmentUpload({
       throw error;
     }
 
-    const { data: urlData } = supabase.storage
+    // Generate signed URL instead of public URL (bucket is private)
+    const { data: signedUrlData } = await supabase.storage
       .from('purchase-attachments')
-      .getPublicUrl(data.path);
+      .createSignedUrl(data.path, 86400); // 24 hour expiry
 
-    return urlData.publicUrl;
+    return signedUrlData?.signedUrl || null;
   };
 
   const handleFiles = useCallback(async (newFiles: FileList | File[]) => {

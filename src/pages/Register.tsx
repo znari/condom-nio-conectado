@@ -249,7 +249,7 @@ export default function Register() {
 
       toast({
         title: 'Cadastro realizado!',
-        description: 'Seu cadastro foi enviado para aprovação. Você receberá uma notificação quando for aprovado.',
+        description: 'Seu cadastro foi enviado para aprovação. A análise será realizada em até 24 horas.',
       });
 
       navigate('/auth');

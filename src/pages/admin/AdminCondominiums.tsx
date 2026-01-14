@@ -6,7 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   Table,
   TableBody,
@@ -40,8 +43,12 @@ export default function AdminCondominiums() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedCondominium, setSelectedCondominium] = useState<Condominium | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState('');
+  const [condominiumToReject, setCondominiumToReject] = useState<Condominium | null>(null);
   
   const { toast } = useToast();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
 
   const { data: condominiums = [], isLoading } = useQuery({
@@ -63,21 +70,61 @@ export default function AdminCondominiums() {
   });
 
   const updateStatusMutation = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: CondominiumStatus }) => {
+    mutationFn: async ({ 
+      id, 
+      status, 
+      rejectionReason: reason 
+    }: { 
+      id: string; 
+      status: CondominiumStatus;
+      rejectionReason?: string;
+    }) => {
+      // 1. Update condominium status
       const { error } = await supabase
         .from('condominiums')
-        .update({ status })
+        .update({ 
+          status,
+          reviewed_by: user?.id,
+          reviewed_at: new Date().toISOString(),
+          rejection_reason: status === 'rejected' ? reason : null
+        })
         .eq('id', id);
       if (error) throw error;
+
+      // 2. Fetch users from this condominium
+      const { data: users } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('condominium_id', id);
+
+      // 3. Create notifications for all users
+      if (users && users.length > 0) {
+        const notifications = users.map(u => ({
+          user_id: u.id,
+          type: status === 'approved' ? 'condominium_approved' : 'condominium_rejected',
+          title: status === 'approved' 
+            ? 'Condomínio Aprovado!' 
+            : 'Cadastro Não Aprovado',
+          message: status === 'approved'
+            ? 'Seu condomínio foi aprovado. Você já pode utilizar todas as funcionalidades.'
+            : `Seu cadastro foi rejeitado. ${reason || 'Entre em contato para mais informações.'}`
+        }));
+
+        await supabase.from('notifications').insert(notifications);
+      }
     },
     onSuccess: (_, { status }) => {
       queryClient.invalidateQueries({ queryKey: ['condominiums'] });
       queryClient.invalidateQueries({ queryKey: ['admin-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['recent-pending'] });
       toast({
         title: 'Status atualizado',
         description: `Condomínio ${status === 'approved' ? 'aprovado' : 'rejeitado'} com sucesso`,
       });
       setDetailsOpen(false);
+      setRejectDialogOpen(false);
+      setRejectionReason('');
+      setCondominiumToReject(null);
     },
     onError: () => {
       toast({
@@ -115,6 +162,23 @@ export default function AdminCondominiums() {
         {statusConfig?.label}
       </Badge>
     );
+  };
+
+  const handleReject = (condominium: Condominium) => {
+    setCondominiumToReject(condominium);
+    setRejectionReason('');
+    setRejectDialogOpen(true);
+    setDetailsOpen(false);
+  };
+
+  const confirmReject = () => {
+    if (condominiumToReject) {
+      updateStatusMutation.mutate({
+        id: condominiumToReject.id,
+        status: 'rejected',
+        rejectionReason: rejectionReason
+      });
+    }
   };
 
   return (
@@ -212,7 +276,7 @@ export default function AdminCondominiums() {
                                   variant="ghost"
                                   size="icon"
                                   className="text-destructive hover:text-destructive"
-                                  onClick={() => updateStatusMutation.mutate({ id: condominium.id, status: 'rejected' })}
+                                  onClick={() => handleReject(condominium)}
                                   disabled={updateStatusMutation.isPending}
                                 >
                                   <XCircle className="h-4 w-4" />
@@ -272,6 +336,20 @@ export default function AdminCondominiums() {
                       {format(new Date(selectedCondominium.created_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
                     </p>
                   </div>
+                  {selectedCondominium.reviewed_at && (
+                    <div className="md:col-span-2">
+                      <p className="text-sm text-muted-foreground">Revisado em</p>
+                      <p className="font-medium">
+                        {format(new Date(selectedCondominium.reviewed_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                      </p>
+                    </div>
+                  )}
+                  {selectedCondominium.rejection_reason && (
+                    <div className="md:col-span-2">
+                      <p className="text-sm text-muted-foreground">Motivo da Rejeição</p>
+                      <p className="font-medium text-destructive">{selectedCondominium.rejection_reason}</p>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -280,15 +358,11 @@ export default function AdminCondominiums() {
                 <>
                   <Button
                     variant="outline"
-                    onClick={() => updateStatusMutation.mutate({ id: selectedCondominium.id, status: 'rejected' })}
+                    onClick={() => handleReject(selectedCondominium)}
                     disabled={updateStatusMutation.isPending}
                     className="border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
                   >
-                    {updateStatusMutation.isPending ? (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : (
-                      <XCircle className="mr-2 h-4 w-4" />
-                    )}
+                    <XCircle className="mr-2 h-4 w-4" />
                     Rejeitar
                   </Button>
                   <Button
@@ -305,6 +379,58 @@ export default function AdminCondominiums() {
                   </Button>
                 </>
               )}
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Rejection Dialog */}
+        <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Rejeitar Condomínio</DialogTitle>
+              <DialogDescription>
+                Informe o motivo da rejeição para que o usuário saiba o que precisa corrigir.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Condomínio</Label>
+                <p className="text-sm font-medium">{condominiumToReject?.name}</p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="rejection-reason">Motivo da Rejeição</Label>
+                <Textarea
+                  id="rejection-reason"
+                  value={rejectionReason}
+                  onChange={(e) => setRejectionReason(e.target.value)}
+                  placeholder="Ex: CNPJ inválido, documentação incompleta, dados inconsistentes..."
+                  rows={4}
+                />
+              </div>
+            </div>
+            <DialogFooter className="gap-2">
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setRejectDialogOpen(false);
+                  setCondominiumToReject(null);
+                  setRejectionReason('');
+                }}
+              >
+                Cancelar
+              </Button>
+              <Button 
+                variant="destructive"
+                onClick={confirmReject}
+                disabled={updateStatusMutation.isPending}
+              >
+                {updateStatusMutation.isPending ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <XCircle className="mr-2 h-4 w-4" />
+                )}
+                Confirmar Rejeição
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>

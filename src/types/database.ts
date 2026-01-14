@@ -103,6 +103,17 @@ export interface Notification {
   created_at: string;
 }
 
+export interface ResolutionTimeAlert {
+  id: string;
+  condominium_id: string;
+  category: ServiceCategory;
+  max_resolution_days: number;
+  warning_threshold_days: number;
+  enabled: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 // Helper constants and label maps
 export const SERVICE_CATEGORY_LABELS: Record<ServiceCategory, string> = {
   encanador: 'Encanador',

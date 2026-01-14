@@ -4,11 +4,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { LogoUpload } from '@/components/settings/LogoUpload';
 import { CondominiumForm } from '@/components/settings/CondominiumForm';
+import { ResolutionAlertSettings } from '@/components/settings/ResolutionAlertSettings';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Building2, Image, Settings2, Bell } from 'lucide-react';
+import { Building2, Image, Settings2, Bell, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import type { Condominium, CondominiumStatus } from '@/types/database';
@@ -117,14 +118,18 @@ export default function Settings() {
 
         {/* Tabs */}
         <Tabs defaultValue="dados" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:inline-grid">
+          <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-grid">
             <TabsTrigger value="dados" className="gap-2">
               <Building2 className="w-4 h-4 hidden sm:inline" />
-              Dados Cadastrais
+              Dados
             </TabsTrigger>
             <TabsTrigger value="logo" className="gap-2">
               <Image className="w-4 h-4 hidden sm:inline" />
               Logo
+            </TabsTrigger>
+            <TabsTrigger value="alertas" className="gap-2">
+              <AlertTriangle className="w-4 h-4 hidden sm:inline" />
+              Alertas
             </TabsTrigger>
             <TabsTrigger value="preferencias" className="gap-2">
               <Settings2 className="w-4 h-4 hidden sm:inline" />
@@ -171,6 +176,24 @@ export default function Settings() {
                   currentLogoUrl={condominium.logo_url || null}
                   onLogoChange={handleLogoChange}
                 />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Alertas */}
+          <TabsContent value="alertas">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <AlertTriangle className="w-5 h-5" />
+                  Alertas de Tempo de Resolução
+                </CardTitle>
+                <CardDescription>
+                  Configure limites de tempo para alertas automáticos quando chamados demorarem mais que o esperado.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResolutionAlertSettings />
               </CardContent>
             </Card>
           </TabsContent>

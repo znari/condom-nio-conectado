@@ -8,6 +8,7 @@ import {
   Users,
   Wrench,
   FileText,
+  BarChart3,
   Bell,
   Settings,
   LogOut,
@@ -36,6 +37,7 @@ export function Sidebar() {
     { icon: LayoutDashboard, label: 'Dashboard', href: '/dashboard' },
     { icon: FileText, label: 'Chamados', href: '/chamados' },
     { icon: Users, label: 'Prestadores', href: '/prestadores' },
+    { icon: BarChart3, label: 'Relatórios', href: '/relatorios' },
     { icon: Settings, label: 'Configurações', href: '/configuracoes' },
   ];
 

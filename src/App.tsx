@@ -22,6 +22,7 @@ import ServiceCalls from "./pages/manager/ServiceCalls";
 import ServiceCallNew from "./pages/manager/ServiceCallNew";
 import ServiceCallDetails from "./pages/manager/ServiceCallDetails";
 import Settings from "./pages/manager/Settings";
+import Reports from "./pages/manager/Reports";
 
 import NotFound from "./pages/NotFound";
 
@@ -105,6 +106,14 @@ const App = () => (
               element={
                 <ProtectedRoute allowedRoles={['manager']}>
                   <Settings />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/relatorios"
+              element={
+                <ProtectedRoute allowedRoles={['manager']}>
+                  <Reports />
                 </ProtectedRoute>
               }
             />

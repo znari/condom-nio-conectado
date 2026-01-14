@@ -233,6 +233,47 @@ export type Database = {
           },
         ]
       }
+      purchase_request_attachments: {
+        Row: {
+          file_name: string
+          file_size: number | null
+          file_type: Database["public"]["Enums"]["attachment_type"]
+          file_url: string
+          id: string
+          purchase_request_id: string
+          uploaded_at: string
+          uploaded_by: string
+        }
+        Insert: {
+          file_name: string
+          file_size?: number | null
+          file_type?: Database["public"]["Enums"]["attachment_type"]
+          file_url: string
+          id?: string
+          purchase_request_id: string
+          uploaded_at?: string
+          uploaded_by: string
+        }
+        Update: {
+          file_name?: string
+          file_size?: number | null
+          file_type?: Database["public"]["Enums"]["attachment_type"]
+          file_url?: string
+          id?: string
+          purchase_request_id?: string
+          uploaded_at?: string
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_request_attachments_purchase_request_id_fkey"
+            columns: ["purchase_request_id"]
+            isOneToOne: false
+            referencedRelation: "purchase_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       purchase_requests: {
         Row: {
           actual_value: number | null
@@ -624,6 +665,7 @@ export type Database = {
     }
     Enums: {
       app_role: "super_admin" | "manager"
+      attachment_type: "image" | "pdf" | "quote"
       call_status:
         | "open"
         | "sent"
@@ -791,6 +833,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["super_admin", "manager"],
+      attachment_type: ["image", "pdf", "quote"],
       call_status: [
         "open",
         "sent",

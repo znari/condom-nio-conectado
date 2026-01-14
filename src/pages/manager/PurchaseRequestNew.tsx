@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
@@ -9,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 import {
   Form,
   FormControl,
@@ -24,11 +26,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { AttachmentUpload } from '@/components/purchases/AttachmentUpload';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { PURCHASE_CATEGORIES, PURCHASE_PRIORITIES } from '@/types/database';
-import { ArrowLeft, Loader2 } from 'lucide-react';
-import type { PurchaseCategory, PurchasePriority } from '@/types/database';
+import { ArrowLeft, Loader2, Paperclip } from 'lucide-react';
+import type { PurchaseCategory, PurchasePriority, AttachmentType } from '@/types/database';
 
 const formSchema = z.object({
   title: z.string().min(3, 'O título deve ter pelo menos 3 caracteres'),
@@ -42,10 +45,18 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
+interface UploadedFile {
+  url: string;
+  name: string;
+  type: 'image' | 'pdf' | 'quote';
+  size: number;
+}
+
 export default function PurchaseRequestNew() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user, profile } = useAuth();
+  const [attachments, setAttachments] = useState<UploadedFile[]>([]);
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -66,19 +77,45 @@ export default function PurchaseRequestNew() {
         throw new Error('Usuário não autenticado');
       }
 
-      const { error } = await supabase.from('purchase_requests').insert({
-        condominium_id: profile.condominium_id,
-        created_by: user.id,
-        title: data.title,
-        description: data.description || null,
-        category: data.category as PurchaseCategory,
-        priority: data.priority as PurchasePriority,
-        quantity: data.quantity,
-        unit: data.unit,
-        estimated_value: data.estimated_value || null,
-      });
+      // Create the purchase request
+      const { data: newRequest, error } = await supabase
+        .from('purchase_requests')
+        .insert({
+          condominium_id: profile.condominium_id,
+          created_by: user.id,
+          title: data.title,
+          description: data.description || null,
+          category: data.category as PurchaseCategory,
+          priority: data.priority as PurchasePriority,
+          quantity: data.quantity,
+          unit: data.unit,
+          estimated_value: data.estimated_value || null,
+        })
+        .select('id')
+        .single();
 
       if (error) throw error;
+
+      // Insert attachments if any
+      if (attachments.length > 0 && newRequest) {
+        const attachmentRecords = attachments.map((attachment) => ({
+          purchase_request_id: newRequest.id,
+          file_url: attachment.url,
+          file_name: attachment.name,
+          file_type: attachment.type as AttachmentType,
+          file_size: attachment.size,
+          uploaded_by: user.id,
+        }));
+
+        const { error: attachError } = await supabase
+          .from('purchase_request_attachments')
+          .insert(attachmentRecords);
+
+        if (attachError) {
+          console.error('Error saving attachments:', attachError);
+          // Don't fail the whole request, just log the error
+        }
+      }
 
       // Create notification for sindicos
       const { data: sindicos } = await supabase
@@ -279,6 +316,21 @@ export default function PurchaseRequestNew() {
                         <FormMessage />
                       </FormItem>
                     )}
+                  />
+                </div>
+
+                {/* Attachments Section */}
+                <div className="space-y-2 pt-4 border-t">
+                  <Label className="flex items-center gap-2">
+                    <Paperclip className="h-4 w-4" />
+                    Anexos (opcional)
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    Adicione fotos do produto ou orçamentos em PDF
+                  </p>
+                  <AttachmentUpload
+                    onFilesChange={setAttachments}
+                    maxFiles={10}
                   />
                 </div>
 

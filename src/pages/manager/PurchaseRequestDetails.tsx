@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/dialog';
 import { PurchaseStatusBadge } from '@/components/purchases/PurchaseStatusBadge';
 import { PurchasePriorityBadge } from '@/components/purchases/PurchasePriorityBadge';
+import { AttachmentGallery } from '@/components/purchases/AttachmentGallery';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { PURCHASE_CATEGORY_LABELS } from '@/types/database';
@@ -35,8 +36,9 @@ import {
   Package,
   DollarSign,
   AlertCircle,
+  Paperclip,
 } from 'lucide-react';
-import type { PurchaseRequest, PurchaseCategory, PurchasePriority, PurchaseRequestStatus } from '@/types/database';
+import type { PurchaseRequest, PurchaseCategory, PurchasePriority, PurchaseRequestStatus, PurchaseRequestAttachment } from '@/types/database';
 
 export default function PurchaseRequestDetails() {
   const { id } = useParams<{ id: string }>();
@@ -64,6 +66,22 @@ export default function PurchaseRequestDetails() {
       if (error) throw error;
       return data as unknown as PurchaseRequest;
     },
+  });
+
+  // Fetch attachments
+  const { data: attachments = [] } = useQuery({
+    queryKey: ['purchase-request-attachments', id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('purchase_request_attachments')
+        .select('*')
+        .eq('purchase_request_id', id)
+        .order('uploaded_at', { ascending: true });
+
+      if (error) throw error;
+      return data as unknown as PurchaseRequestAttachment[];
+    },
+    enabled: !!id,
   });
 
   const { data: creator } = useQuery({
@@ -302,6 +320,21 @@ export default function PurchaseRequestDetails() {
             )}
           </CardContent>
         </Card>
+
+        {/* Attachments */}
+        {attachments.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Paperclip className="h-5 w-5" />
+                Anexos ({attachments.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <AttachmentGallery attachments={attachments} />
+            </CardContent>
+          </Card>
+        )}
 
         {/* Actions */}
         {(canApprove || canMarkPurchased || canCancel) && (

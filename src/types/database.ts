@@ -114,6 +114,46 @@ export interface ResolutionTimeAlert {
   updated_at: string;
 }
 
+export interface NotificationPreferences {
+  id: string;
+  condominium_id: string;
+  email_enabled: boolean;
+  whatsapp_enabled: boolean;
+  notify_new_quote: boolean;
+  notify_call_completed: boolean;
+  notify_resolution_alerts: boolean;
+  notify_weekly_summary: boolean;
+  notify_monthly_summary: boolean;
+  preferred_time: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UserInvitation {
+  id: string;
+  condominium_id: string;
+  email: string;
+  position: UserPosition;
+  invited_by: string | null;
+  token: string;
+  expires_at: string;
+  accepted_at: string | null;
+  created_at: string;
+}
+
+export interface CategorySetting {
+  id: string;
+  condominium_id: string;
+  category: ServiceCategory;
+  enabled: boolean;
+  display_order: number;
+  custom_label: string | null;
+  icon_name: string | null;
+  color: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 // Helper constants and label maps
 export const SERVICE_CATEGORY_LABELS: Record<ServiceCategory, string> = {
   encanador: 'Encanador',

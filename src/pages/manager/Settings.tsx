@@ -5,11 +5,24 @@ import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { LogoUpload } from '@/components/settings/LogoUpload';
 import { CondominiumForm } from '@/components/settings/CondominiumForm';
 import { ResolutionAlertSettings } from '@/components/settings/ResolutionAlertSettings';
+import { NotificationSettings } from '@/components/settings/NotificationSettings';
+import { UserManagement } from '@/components/settings/UserManagement';
+import { CategorySettings } from '@/components/settings/CategorySettings';
+import { IntegrationSettings } from '@/components/settings/IntegrationSettings';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Building2, Image, Settings2, Bell, AlertTriangle } from 'lucide-react';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { 
+  Building2, 
+  Image, 
+  AlertTriangle, 
+  Bell, 
+  Users, 
+  FolderCog, 
+  Plug 
+} from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import type { Condominium, CondominiumStatus } from '@/types/database';
@@ -118,24 +131,39 @@ export default function Settings() {
 
         {/* Tabs */}
         <Tabs defaultValue="dados" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-grid">
-            <TabsTrigger value="dados" className="gap-2">
-              <Building2 className="w-4 h-4 hidden sm:inline" />
-              Dados
-            </TabsTrigger>
-            <TabsTrigger value="logo" className="gap-2">
-              <Image className="w-4 h-4 hidden sm:inline" />
-              Logo
-            </TabsTrigger>
-            <TabsTrigger value="alertas" className="gap-2">
-              <AlertTriangle className="w-4 h-4 hidden sm:inline" />
-              Alertas
-            </TabsTrigger>
-            <TabsTrigger value="preferencias" className="gap-2">
-              <Settings2 className="w-4 h-4 hidden sm:inline" />
-              Preferências
-            </TabsTrigger>
-          </TabsList>
+          <ScrollArea className="w-full whitespace-nowrap">
+            <TabsList className="inline-flex w-auto">
+              <TabsTrigger value="dados" className="gap-2">
+                <Building2 className="w-4 h-4 hidden sm:inline" />
+                Dados
+              </TabsTrigger>
+              <TabsTrigger value="logo" className="gap-2">
+                <Image className="w-4 h-4 hidden sm:inline" />
+                Logo
+              </TabsTrigger>
+              <TabsTrigger value="alertas" className="gap-2">
+                <AlertTriangle className="w-4 h-4 hidden sm:inline" />
+                Alertas
+              </TabsTrigger>
+              <TabsTrigger value="notificacoes" className="gap-2">
+                <Bell className="w-4 h-4 hidden sm:inline" />
+                Notificações
+              </TabsTrigger>
+              <TabsTrigger value="usuarios" className="gap-2">
+                <Users className="w-4 h-4 hidden sm:inline" />
+                Usuários
+              </TabsTrigger>
+              <TabsTrigger value="categorias" className="gap-2">
+                <FolderCog className="w-4 h-4 hidden sm:inline" />
+                Categorias
+              </TabsTrigger>
+              <TabsTrigger value="integracoes" className="gap-2">
+                <Plug className="w-4 h-4 hidden sm:inline" />
+                Integrações
+              </TabsTrigger>
+            </TabsList>
+            <ScrollBar orientation="horizontal" />
+          </ScrollArea>
 
           {/* Dados Cadastrais */}
           <TabsContent value="dados">
@@ -198,8 +226,8 @@ export default function Settings() {
             </Card>
           </TabsContent>
 
-          {/* Preferências */}
-          <TabsContent value="preferencias">
+          {/* Notificações */}
+          <TabsContent value="notificacoes">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -207,17 +235,65 @@ export default function Settings() {
                   Preferências de Notificação
                 </CardTitle>
                 <CardDescription>
-                  Configure como deseja receber notificações sobre chamados e orçamentos.
+                  Configure como e quando deseja receber notificações sobre chamados e orçamentos.
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <Settings2 className="w-16 h-16 text-muted-foreground/30 mb-4" />
-                  <h3 className="text-lg font-medium mb-2">Em breve</h3>
-                  <p className="text-muted-foreground max-w-md">
-                    Configurações de notificações por e-mail e WhatsApp estarão disponíveis em uma próxima atualização.
-                  </p>
-                </div>
+                <NotificationSettings />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Usuários */}
+          <TabsContent value="usuarios">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="w-5 h-5" />
+                  Gestão de Usuários
+                </CardTitle>
+                <CardDescription>
+                  Gerencie síndicos e zeladores com acesso ao sistema do condomínio.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <UserManagement />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Categorias */}
+          <TabsContent value="categorias">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FolderCog className="w-5 h-5" />
+                  Categorias de Serviço
+                </CardTitle>
+                <CardDescription>
+                  Personalize as categorias de serviço disponíveis para os chamados.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <CategorySettings />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Integrações */}
+          <TabsContent value="integracoes">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Plug className="w-5 h-5" />
+                  Integrações Externas
+                </CardTitle>
+                <CardDescription>
+                  Conecte serviços externos como WhatsApp e E-mail para expandir as funcionalidades.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <IntegrationSettings />
               </CardContent>
             </Card>
           </TabsContent>

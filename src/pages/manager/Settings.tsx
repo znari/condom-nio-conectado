@@ -36,8 +36,11 @@ export default function Settings() {
   useEffect(() => {
     if (profile?.condominium_id) {
       fetchCondominium();
+    } else if (profile !== null) {
+      // Profile carregado mas sem condominium_id
+      setLoading(false);
     }
-  }, [profile?.condominium_id]);
+  }, [profile, profile?.condominium_id]);
 
   const fetchCondominium = async () => {
     try {
@@ -91,8 +94,14 @@ export default function Settings() {
   if (!condominium) {
     return (
       <DashboardLayout title="Configurações">
-        <div className="flex items-center justify-center h-64">
-          <p className="text-muted-foreground">Condomínio não encontrado.</p>
+        <div className="flex flex-col items-center justify-center h-64 gap-4">
+          <AlertTriangle className="h-12 w-12 text-yellow-500" />
+          <div className="text-center">
+            <h2 className="text-lg font-semibold">Condomínio não vinculado</h2>
+            <p className="text-muted-foreground">
+              Seu perfil ainda não está associado a um condomínio. Complete o cadastro ou entre em contato com o suporte.
+            </p>
+          </div>
         </div>
       </DashboardLayout>
     );

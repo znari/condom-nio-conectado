@@ -23,6 +23,9 @@ import ServiceCallNew from "./pages/manager/ServiceCallNew";
 import ServiceCallDetails from "./pages/manager/ServiceCallDetails";
 import Settings from "./pages/manager/Settings";
 import Reports from "./pages/manager/Reports";
+import PurchaseRequests from "./pages/manager/PurchaseRequests";
+import PurchaseRequestNew from "./pages/manager/PurchaseRequestNew";
+import PurchaseRequestDetails from "./pages/manager/PurchaseRequestDetails";
 
 import NotFound from "./pages/NotFound";
 
@@ -114,6 +117,30 @@ const App = () => (
               element={
                 <ProtectedRoute allowedRoles={['manager']}>
                   <Reports />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/compras"
+              element={
+                <ProtectedRoute allowedRoles={['manager']}>
+                  <PurchaseRequests />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/compras/nova"
+              element={
+                <ProtectedRoute allowedRoles={['manager']}>
+                  <PurchaseRequestNew />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/compras/:id"
+              element={
+                <ProtectedRoute allowedRoles={['manager']}>
+                  <PurchaseRequestDetails />
                 </ProtectedRoute>
               }
             />

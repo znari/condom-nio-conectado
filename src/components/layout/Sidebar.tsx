@@ -14,6 +14,7 @@ import {
   LogOut,
   ChevronLeft,
   ChevronRight,
+  ShoppingCart,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -36,6 +37,7 @@ export function Sidebar() {
   const managerNavItems: NavItem[] = [
     { icon: LayoutDashboard, label: 'Dashboard', href: '/dashboard' },
     { icon: FileText, label: 'Chamados', href: '/chamados' },
+    { icon: ShoppingCart, label: 'Compras', href: '/compras' },
     { icon: Users, label: 'Prestadores', href: '/prestadores' },
     { icon: BarChart3, label: 'Relatórios', href: '/relatorios' },
     { icon: Settings, label: 'Configurações', href: '/configuracoes' },

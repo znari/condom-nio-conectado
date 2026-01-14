@@ -8,6 +8,11 @@ export type UrgencyLevel = 'low' | 'medium' | 'high' | 'critical';
 export type ServiceCategory = 'encanador' | 'eletricista' | 'pintor' | 'jardineiro' | 'limpeza' | 'chaveiro' | 'vidraceiro' | 'porteiro' | 'outros';
 export type PhotoType = 'initial' | 'completion';
 
+// Purchase Request Types
+export type PurchaseRequestStatus = 'pending' | 'approved' | 'rejected' | 'purchased' | 'cancelled';
+export type PurchaseCategory = 'limpeza' | 'manutencao' | 'equipamento' | 'ferramentas' | 'jardinagem' | 'eletrico' | 'hidraulico' | 'seguranca' | 'escritorio' | 'outros';
+export type PurchasePriority = 'low' | 'medium' | 'high' | 'urgent';
+
 export interface Condominium {
   id: string;
   name: string;
@@ -157,6 +162,30 @@ export interface CategorySetting {
   updated_at: string;
 }
 
+export interface PurchaseRequest {
+  id: string;
+  condominium_id: string;
+  title: string;
+  description: string | null;
+  category: PurchaseCategory;
+  priority: PurchasePriority;
+  quantity: number;
+  unit: string;
+  estimated_value: number | null;
+  actual_value: number | null;
+  status: PurchaseRequestStatus;
+  rejection_reason: string | null;
+  created_by: string;
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+  purchased_at: string | null;
+  purchase_notes: string | null;
+  created_at: string;
+  updated_at: string;
+  creator?: Profile;
+  reviewer?: Profile;
+}
+
 // Helper constants and label maps
 export const SERVICE_CATEGORY_LABELS: Record<ServiceCategory, string> = {
   encanador: 'Encanador',
@@ -212,3 +241,53 @@ export const CONDOMINIUM_STATUSES: { value: CondominiumStatus; label: string; co
   { value: 'approved', label: 'Aprovado', color: 'bg-success/10 text-success' },
   { value: 'rejected', label: 'Rejeitado', color: 'bg-destructive/10 text-destructive' },
 ];
+
+// Purchase Request Constants
+export const PURCHASE_CATEGORIES: { value: PurchaseCategory; label: string; icon: string }[] = [
+  { value: 'limpeza', label: 'Limpeza', icon: 'Sparkles' },
+  { value: 'manutencao', label: 'Manutenção', icon: 'Wrench' },
+  { value: 'equipamento', label: 'Equipamentos', icon: 'Laptop' },
+  { value: 'ferramentas', label: 'Ferramentas', icon: 'Hammer' },
+  { value: 'jardinagem', label: 'Jardinagem', icon: 'Leaf' },
+  { value: 'eletrico', label: 'Material Elétrico', icon: 'Zap' },
+  { value: 'hidraulico', label: 'Material Hidráulico', icon: 'Droplet' },
+  { value: 'seguranca', label: 'Segurança', icon: 'Shield' },
+  { value: 'escritorio', label: 'Escritório', icon: 'FileText' },
+  { value: 'outros', label: 'Outros', icon: 'Package' },
+];
+
+export const PURCHASE_STATUSES: { value: PurchaseRequestStatus; label: string; color: string }[] = [
+  { value: 'pending', label: 'Pendente', color: 'bg-warning/10 text-warning' },
+  { value: 'approved', label: 'Aprovado', color: 'bg-info/10 text-info' },
+  { value: 'rejected', label: 'Rejeitado', color: 'bg-destructive/10 text-destructive' },
+  { value: 'purchased', label: 'Comprado', color: 'bg-success/10 text-success' },
+  { value: 'cancelled', label: 'Cancelado', color: 'bg-muted text-muted-foreground' },
+];
+
+export const PURCHASE_PRIORITIES: { value: PurchasePriority; label: string; color: string }[] = [
+  { value: 'low', label: 'Baixa', color: 'bg-muted text-muted-foreground' },
+  { value: 'medium', label: 'Média', color: 'bg-info/10 text-info' },
+  { value: 'high', label: 'Alta', color: 'bg-warning/10 text-warning' },
+  { value: 'urgent', label: 'Urgente', color: 'bg-destructive/10 text-destructive' },
+];
+
+export const PURCHASE_CATEGORY_LABELS: Record<PurchaseCategory, string> = {
+  limpeza: 'Limpeza',
+  manutencao: 'Manutenção',
+  equipamento: 'Equipamentos',
+  ferramentas: 'Ferramentas',
+  jardinagem: 'Jardinagem',
+  eletrico: 'Material Elétrico',
+  hidraulico: 'Material Hidráulico',
+  seguranca: 'Segurança',
+  escritorio: 'Escritório',
+  outros: 'Outros',
+};
+
+export const PURCHASE_STATUS_LABELS: Record<PurchaseRequestStatus, string> = {
+  pending: 'Pendente',
+  approved: 'Aprovado',
+  rejected: 'Rejeitado',
+  purchased: 'Comprado',
+  cancelled: 'Cancelado',
+};

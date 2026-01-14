@@ -17,6 +17,9 @@ import AdminCondominiums from "./pages/admin/AdminCondominiums";
 // Manager pages
 import ManagerDashboard from "./pages/manager/ManagerDashboard";
 import Providers from "./pages/manager/Providers";
+import ServiceCalls from "./pages/manager/ServiceCalls";
+import ServiceCallNew from "./pages/manager/ServiceCallNew";
+import ServiceCallDetails from "./pages/manager/ServiceCallDetails";
 
 import NotFound from "./pages/NotFound";
 
@@ -59,6 +62,30 @@ const App = () => (
               element={
                 <ProtectedRoute allowedRoles={['manager']}>
                   <ManagerDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/chamados"
+              element={
+                <ProtectedRoute allowedRoles={['manager']}>
+                  <ServiceCalls />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/chamados/novo"
+              element={
+                <ProtectedRoute allowedRoles={['manager']}>
+                  <ServiceCallNew />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/chamados/:id"
+              element={
+                <ProtectedRoute allowedRoles={['manager']}>
+                  <ServiceCallDetails />
                 </ProtectedRoute>
               }
             />

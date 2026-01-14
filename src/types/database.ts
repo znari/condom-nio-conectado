@@ -102,7 +102,28 @@ export interface Notification {
   created_at: string;
 }
 
-// Helper constants
+// Helper constants and label maps
+export const SERVICE_CATEGORY_LABELS: Record<ServiceCategory, string> = {
+  encanador: 'Encanador',
+  eletricista: 'Eletricista',
+  pintor: 'Pintor',
+  jardineiro: 'Jardineiro',
+  limpeza: 'Limpeza',
+  chaveiro: 'Chaveiro',
+  vidraceiro: 'Vidraceiro',
+  porteiro: 'Porteiro/Segurança',
+  outros: 'Outros',
+};
+
+export const CALL_STATUS_LABELS: Record<CallStatus, string> = {
+  open: 'Aberto',
+  sent: 'Enviado ao Prestador',
+  awaiting_approval: 'Aguardando Aprovação',
+  in_progress: 'Em Andamento',
+  completed: 'Concluído',
+  cancelled: 'Cancelado',
+};
+
 export const SERVICE_CATEGORIES: { value: ServiceCategory; label: string }[] = [
   { value: 'encanador', label: 'Encanador' },
   { value: 'eletricista', label: 'Eletricista' },

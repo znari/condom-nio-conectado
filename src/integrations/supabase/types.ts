@@ -124,6 +124,47 @@ export type Database = {
           },
         ]
       }
+      resolution_time_alerts: {
+        Row: {
+          category: Database["public"]["Enums"]["service_category"]
+          condominium_id: string
+          created_at: string
+          enabled: boolean
+          id: string
+          max_resolution_days: number
+          updated_at: string
+          warning_threshold_days: number
+        }
+        Insert: {
+          category: Database["public"]["Enums"]["service_category"]
+          condominium_id: string
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          max_resolution_days?: number
+          updated_at?: string
+          warning_threshold_days?: number
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["service_category"]
+          condominium_id?: string
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          max_resolution_days?: number
+          updated_at?: string
+          warning_threshold_days?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "resolution_time_alerts_condominium_id_fkey"
+            columns: ["condominium_id"]
+            isOneToOne: false
+            referencedRelation: "condominiums"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       service_call_photos: {
         Row: {
           id: string

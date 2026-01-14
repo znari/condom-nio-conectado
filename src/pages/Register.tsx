@@ -187,19 +187,22 @@ export default function Register() {
     try {
       // Limpar qualquer sessão expirada antes de prosseguir
       await supabase.auth.signOut();
-      // 1. Create condominium first
-      const { data: condominiumData, error: condominiumError } = await supabase
+      
+      // Generate condominium ID client-side to avoid needing SELECT permission
+      const condominiumId = crypto.randomUUID();
+      
+      // 1. Create condominium first (without .select() to avoid exposing data)
+      const { error: condominiumError } = await supabase
         .from('condominiums')
         .insert({
+          id: condominiumId,
           name: formData.condominiumName!,
           cnpj: formData.cnpj!.replace(/\D/g, ''),
           address: formData.address!,
           phone: formData.phone!.replace(/\D/g, ''),
           email: formData.condominiumEmail!,
           status: 'pending',
-        })
-        .select()
-        .single();
+        });
 
       if (condominiumError) {
         if (condominiumError.message.includes('duplicate')) {
@@ -223,7 +226,7 @@ export default function Register() {
           emailRedirectTo: `${window.location.origin}/`,
           data: {
             name: formData.userName,
-            condominium_id: condominiumData.id,
+            condominium_id: condominiumId,
             position: formData.position,
             role: 'manager',
           },
@@ -232,7 +235,7 @@ export default function Register() {
 
       if (signUpError) {
         // Rollback: delete condominium
-        await supabase.from('condominiums').delete().eq('id', condominiumData.id);
+        await supabase.from('condominiums').delete().eq('id', condominiumId);
         
         if (signUpError.message.includes('already registered')) {
           toast({

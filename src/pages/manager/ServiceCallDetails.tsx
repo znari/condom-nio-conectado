@@ -46,12 +46,38 @@ export default function ServiceCallDetails() {
   const [call, setCall] = useState<FullServiceCall | null>(null);
   const [loading, setLoading] = useState(true);
   const [ratingModalOpen, setRatingModalOpen] = useState(false);
+  const [signedPhotoUrls, setSignedPhotoUrls] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (id) {
       fetchCall();
     }
   }, [id]);
+
+  // Generate signed URLs for photos
+  const generateSignedUrls = async (photos: ServiceCallPhoto[]) => {
+    const signedUrls: Record<string, string> = {};
+    
+    for (const photo of photos) {
+      // Extract the file path from the full URL
+      const urlMatch = photo.photo_url.match(/service-call-photos\/(.+?)(\?|$)/);
+      if (urlMatch) {
+        const filePath = urlMatch[1];
+        const { data: signedUrl } = await supabase.storage
+          .from('service-call-photos')
+          .createSignedUrl(filePath, 3600); // 1 hour expiry
+
+        if (signedUrl) {
+          signedUrls[photo.id] = signedUrl.signedUrl;
+        }
+      } else {
+        // Fallback to original URL if it's already a signed URL
+        signedUrls[photo.id] = photo.photo_url;
+      }
+    }
+    
+    return signedUrls;
+  };
 
   const fetchCall = async () => {
     setLoading(true);
@@ -79,10 +105,18 @@ export default function ServiceCallDetails() {
         .eq("service_call_id", id)
         .order("uploaded_at", { ascending: true });
 
+      const photos = photosData || [];
+      
+      // Generate signed URLs for all photos
+      if (photos.length > 0) {
+        const signedUrls = await generateSignedUrls(photos);
+        setSignedPhotoUrls(signedUrls);
+      }
+
       setCall({
         ...callData,
         provider: callData.service_providers,
-        photos: photosData || [],
+        photos: photos,
       });
     } catch (error) {
       console.error("Erro ao buscar chamado:", error);
@@ -259,21 +293,24 @@ export default function ServiceCallDetails() {
                 <div>
                   <h4 className="text-sm font-medium text-muted-foreground mb-3">Fotos do Problema</h4>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    {initialPhotos.map(photo => (
-                      <a 
-                        key={photo.id}
-                        href={photo.photo_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="aspect-square rounded-lg overflow-hidden border hover:opacity-90 transition-opacity"
-                      >
-                        <img 
-                          src={photo.photo_url} 
-                          alt="Foto do chamado" 
-                          className="w-full h-full object-cover"
-                        />
-                      </a>
-                    ))}
+                    {initialPhotos.map(photo => {
+                      const photoUrl = signedPhotoUrls[photo.id] || photo.photo_url;
+                      return (
+                        <a 
+                          key={photo.id}
+                          href={photoUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="aspect-square rounded-lg overflow-hidden border hover:opacity-90 transition-opacity"
+                        >
+                          <img 
+                            src={photoUrl} 
+                            alt="Foto do chamado" 
+                            className="w-full h-full object-cover"
+                          />
+                        </a>
+                      );
+                    })}
                   </div>
                 </div>
               </>
@@ -285,21 +322,24 @@ export default function ServiceCallDetails() {
                 <div>
                   <h4 className="text-sm font-medium text-muted-foreground mb-3">Fotos de Conclusão</h4>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    {completionPhotos.map(photo => (
-                      <a 
-                        key={photo.id}
-                        href={photo.photo_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="aspect-square rounded-lg overflow-hidden border hover:opacity-90 transition-opacity"
-                      >
-                        <img 
-                          src={photo.photo_url} 
-                          alt="Foto de conclusão" 
-                          className="w-full h-full object-cover"
-                        />
-                      </a>
-                    ))}
+                    {completionPhotos.map(photo => {
+                      const photoUrl = signedPhotoUrls[photo.id] || photo.photo_url;
+                      return (
+                        <a 
+                          key={photo.id}
+                          href={photoUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="aspect-square rounded-lg overflow-hidden border hover:opacity-90 transition-opacity"
+                        >
+                          <img 
+                            src={photoUrl} 
+                            alt="Foto de conclusão" 
+                            className="w-full h-full object-cover"
+                          />
+                        </a>
+                      );
+                    })}
                   </div>
                 </div>
               </>

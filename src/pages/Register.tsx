@@ -141,6 +141,8 @@ export default function Register() {
     setLoading(true);
 
     try {
+      // Limpar qualquer sessão expirada antes de prosseguir
+      await supabase.auth.signOut();
       // 1. Create condominium first
       const { data: condominiumData, error: condominiumError } = await supabase
         .from('condominiums')

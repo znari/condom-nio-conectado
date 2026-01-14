@@ -57,14 +57,14 @@ export function Sidebar() {
             <img 
               src="/favicon.png" 
               alt="ZelaSync" 
-              className="h-8 w-8 mx-auto"
+              className="h-8 w-8 mx-auto rounded-lg"
             />
           ) : (
             <div className="flex items-center gap-2">
               <img 
                 src="/favicon.png" 
                 alt="ZelaSync Logo" 
-                className="h-8 w-8"
+                className="h-8 w-8 rounded-lg"
               />
               <span className="text-lg font-semibold">ZelaSync</span>
             </div>

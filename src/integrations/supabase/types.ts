@@ -14,6 +14,53 @@ export type Database = {
   }
   public: {
     Tables: {
+      category_settings: {
+        Row: {
+          category: Database["public"]["Enums"]["service_category"]
+          color: string | null
+          condominium_id: string
+          created_at: string
+          custom_label: string | null
+          display_order: number
+          enabled: boolean
+          icon_name: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          category: Database["public"]["Enums"]["service_category"]
+          color?: string | null
+          condominium_id: string
+          created_at?: string
+          custom_label?: string | null
+          display_order?: number
+          enabled?: boolean
+          icon_name?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["service_category"]
+          color?: string | null
+          condominium_id?: string
+          created_at?: string
+          custom_label?: string | null
+          display_order?: number
+          enabled?: boolean
+          icon_name?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "category_settings_condominium_id_fkey"
+            columns: ["condominium_id"]
+            isOneToOne: false
+            referencedRelation: "condominiums"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       condominiums: {
         Row: {
           address: string
@@ -52,6 +99,59 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      notification_preferences: {
+        Row: {
+          condominium_id: string
+          created_at: string
+          email_enabled: boolean
+          id: string
+          notify_call_completed: boolean
+          notify_monthly_summary: boolean
+          notify_new_quote: boolean
+          notify_resolution_alerts: boolean
+          notify_weekly_summary: boolean
+          preferred_time: string
+          updated_at: string
+          whatsapp_enabled: boolean
+        }
+        Insert: {
+          condominium_id: string
+          created_at?: string
+          email_enabled?: boolean
+          id?: string
+          notify_call_completed?: boolean
+          notify_monthly_summary?: boolean
+          notify_new_quote?: boolean
+          notify_resolution_alerts?: boolean
+          notify_weekly_summary?: boolean
+          preferred_time?: string
+          updated_at?: string
+          whatsapp_enabled?: boolean
+        }
+        Update: {
+          condominium_id?: string
+          created_at?: string
+          email_enabled?: boolean
+          id?: string
+          notify_call_completed?: boolean
+          notify_monthly_summary?: boolean
+          notify_new_quote?: boolean
+          notify_resolution_alerts?: boolean
+          notify_weekly_summary?: boolean
+          preferred_time?: string
+          updated_at?: string
+          whatsapp_enabled?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_preferences_condominium_id_fkey"
+            columns: ["condominium_id"]
+            isOneToOne: true
+            referencedRelation: "condominiums"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       notifications: {
         Row: {
@@ -359,6 +459,50 @@ export type Database = {
             columns: ["service_call_id"]
             isOneToOne: false
             referencedRelation: "service_calls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_invitations: {
+        Row: {
+          accepted_at: string | null
+          condominium_id: string
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          invited_by: string | null
+          position: Database["public"]["Enums"]["user_position"]
+          token: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          condominium_id: string
+          created_at?: string
+          email: string
+          expires_at?: string
+          id?: string
+          invited_by?: string | null
+          position: Database["public"]["Enums"]["user_position"]
+          token?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          condominium_id?: string
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          invited_by?: string | null
+          position?: Database["public"]["Enums"]["user_position"]
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_invitations_condominium_id_fkey"
+            columns: ["condominium_id"]
+            isOneToOne: false
+            referencedRelation: "condominiums"
             referencedColumns: ["id"]
           },
         ]

@@ -453,10 +453,9 @@ export default function ManagerDashboard() {
             />
             <DemandForecastCard
               categoryData={categoryData}
-              historicalData={monthlyData.map(m => ({ month: m.month, value: m.opened }))}
-              estimatedCostPerCall={
+              estimatedCost={
                 costData.length > 0 && monthlyData.reduce((sum, m) => sum + m.opened, 0) > 0
-                  ? costData.reduce((sum, m) => sum + m.actual, 0) / monthlyData.reduce((sum, m) => sum + m.opened, 0)
+                  ? costData.reduce((sum, m) => sum + m.actual, 0)
                   : undefined
               }
             />

@@ -15,6 +15,7 @@ export interface Condominium {
   address: string;
   phone: string;
   email: string;
+  logo_url: string | null;
   status: CondominiumStatus;
   created_at: string;
   updated_at: string;

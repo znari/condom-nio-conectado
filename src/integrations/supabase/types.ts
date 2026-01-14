@@ -21,6 +21,7 @@ export type Database = {
           created_at: string
           email: string
           id: string
+          logo_url: string | null
           name: string
           phone: string
           status: Database["public"]["Enums"]["condominium_status"]
@@ -32,6 +33,7 @@ export type Database = {
           created_at?: string
           email: string
           id?: string
+          logo_url?: string | null
           name: string
           phone: string
           status?: Database["public"]["Enums"]["condominium_status"]
@@ -43,6 +45,7 @@ export type Database = {
           created_at?: string
           email?: string
           id?: string
+          logo_url?: string | null
           name?: string
           phone?: string
           status?: Database["public"]["Enums"]["condominium_status"]

@@ -10,6 +10,7 @@ import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import Auth from "./pages/Auth";
 import Register from "./pages/Register";
 import ProviderQuote from "./pages/public/ProviderQuote";
+import LandingPage from "./pages/LandingPage";
 
 // Admin pages
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -40,7 +41,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             {/* Public Routes */}
-            <Route path="/" element={<Navigate to="/auth" replace />} />
+            <Route path="/" element={<LandingPage />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/cadastro" element={<Register />} />
             <Route path="/orcamento/:token" element={<ProviderQuote />} />

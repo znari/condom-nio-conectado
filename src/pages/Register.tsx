@@ -56,6 +56,50 @@ const registerSchema = z.object({
 
 type FormData = z.infer<typeof registerSchema>;
 
+// Helper function to get user-friendly error messages
+const getErrorMessage = (error: unknown): { title: string; description: string } => {
+  const errorMessage = error instanceof Error ? error.message : String(error);
+  const errorCode = (error as Record<string, unknown>)?.code as string | undefined;
+
+  // JWT expirado
+  if (errorMessage.includes('JWT expired') || errorCode === 'PGRST303') {
+    return {
+      title: 'Sessão expirada',
+      description: 'Sua sessão anterior expirou. Por favor, tente novamente.',
+    };
+  }
+
+  // Erro de conexão/rede
+  if (errorMessage.includes('Failed to fetch') || errorMessage.includes('NetworkError')) {
+    return {
+      title: 'Erro de conexão',
+      description: 'Não foi possível conectar ao servidor. Verifique sua internet e tente novamente.',
+    };
+  }
+
+  // Rate limiting
+  if (errorMessage.includes('rate limit') || errorCode === '429') {
+    return {
+      title: 'Muitas tentativas',
+      description: 'Você fez muitas tentativas. Aguarde alguns minutos antes de tentar novamente.',
+    };
+  }
+
+  // Erro de permissão
+  if (errorMessage.includes('permission denied') || errorCode === '42501') {
+    return {
+      title: 'Permissão negada',
+      description: 'Você não tem permissão para realizar esta ação. Entre em contato com o suporte.',
+    };
+  }
+
+  // Erro genérico
+  return {
+    title: 'Erro no cadastro',
+    description: 'Ocorreu um erro ao realizar o cadastro. Tente novamente.',
+  };
+};
+
 export default function Register() {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -211,9 +255,10 @@ export default function Register() {
       navigate('/auth');
     } catch (error) {
       console.error('Registration error:', error);
+      const { title, description } = getErrorMessage(error);
       toast({
-        title: 'Erro',
-        description: 'Ocorreu um erro ao realizar o cadastro. Tente novamente.',
+        title,
+        description,
         variant: 'destructive',
       });
     } finally {

@@ -233,6 +233,80 @@ export type Database = {
           },
         ]
       }
+      purchase_requests: {
+        Row: {
+          actual_value: number | null
+          category: Database["public"]["Enums"]["purchase_category"]
+          condominium_id: string
+          created_at: string
+          created_by: string
+          description: string | null
+          estimated_value: number | null
+          id: string
+          priority: Database["public"]["Enums"]["purchase_priority"]
+          purchase_notes: string | null
+          purchased_at: string | null
+          quantity: number
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["purchase_request_status"]
+          title: string
+          unit: string | null
+          updated_at: string
+        }
+        Insert: {
+          actual_value?: number | null
+          category?: Database["public"]["Enums"]["purchase_category"]
+          condominium_id: string
+          created_at?: string
+          created_by: string
+          description?: string | null
+          estimated_value?: number | null
+          id?: string
+          priority?: Database["public"]["Enums"]["purchase_priority"]
+          purchase_notes?: string | null
+          purchased_at?: string | null
+          quantity?: number
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["purchase_request_status"]
+          title: string
+          unit?: string | null
+          updated_at?: string
+        }
+        Update: {
+          actual_value?: number | null
+          category?: Database["public"]["Enums"]["purchase_category"]
+          condominium_id?: string
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          estimated_value?: number | null
+          id?: string
+          priority?: Database["public"]["Enums"]["purchase_priority"]
+          purchase_notes?: string | null
+          purchased_at?: string | null
+          quantity?: number
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["purchase_request_status"]
+          title?: string
+          unit?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_requests_condominium_id_fkey"
+            columns: ["condominium_id"]
+            isOneToOne: false
+            referencedRelation: "condominiums"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       resolution_time_alerts: {
         Row: {
           category: Database["public"]["Enums"]["service_category"]
@@ -559,6 +633,24 @@ export type Database = {
         | "cancelled"
       condominium_status: "pending" | "approved" | "rejected"
       photo_type: "initial" | "completion"
+      purchase_category:
+        | "limpeza"
+        | "manutencao"
+        | "equipamento"
+        | "ferramentas"
+        | "jardinagem"
+        | "eletrico"
+        | "hidraulico"
+        | "seguranca"
+        | "escritorio"
+        | "outros"
+      purchase_priority: "low" | "medium" | "high" | "urgent"
+      purchase_request_status:
+        | "pending"
+        | "approved"
+        | "rejected"
+        | "purchased"
+        | "cancelled"
       service_category:
         | "encanador"
         | "eletricista"
@@ -709,6 +801,26 @@ export const Constants = {
       ],
       condominium_status: ["pending", "approved", "rejected"],
       photo_type: ["initial", "completion"],
+      purchase_category: [
+        "limpeza",
+        "manutencao",
+        "equipamento",
+        "ferramentas",
+        "jardinagem",
+        "eletrico",
+        "hidraulico",
+        "seguranca",
+        "escritorio",
+        "outros",
+      ],
+      purchase_priority: ["low", "medium", "high", "urgent"],
+      purchase_request_status: [
+        "pending",
+        "approved",
+        "rejected",
+        "purchased",
+        "cancelled",
+      ],
       service_category: [
         "encanador",
         "eletricista",

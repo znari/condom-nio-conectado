@@ -334,7 +334,7 @@ export default function ManagerDashboard() {
           <Clock className="h-4 w-4 text-warning" />
           <AlertTitle>Aguardando Aprovação</AlertTitle>
           <AlertDescription className="space-y-2">
-            <p>Seu cadastro está em análise.</p>
+            <p>Seu cadastro está em análise. A aprovação será realizada em até 24 horas.</p>
             <p className="text-sm text-muted-foreground">
               Você receberá uma notificação assim que for aprovado.
             </p>

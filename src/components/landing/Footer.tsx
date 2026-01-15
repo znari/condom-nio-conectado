@@ -1,19 +1,28 @@
 import { Link } from "react-router-dom";
 import { Mail, Building2 } from "lucide-react";
+import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
+  const { ref: footerRef, isVisible: footerVisible } = useScrollAnimation({ threshold: 0.1 });
 
   return (
-    <footer className="bg-gradient-to-b from-background to-muted/30 border-t border-border/50">
+    <footer 
+      ref={footerRef}
+      className={`bg-gradient-to-b from-background to-muted/30 border-t border-border/50 transition-all duration-700 ${
+        footerVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+      }`}
+    >
       <div className="container mx-auto px-4 py-16">
         <div className="grid md:grid-cols-4 gap-12 mb-12">
           {/* Brand section */}
           <div className="md:col-span-2">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                <span className="text-xl font-bold text-primary">Z</span>
-              </div>
+              <img 
+                src="/favicon.png" 
+                alt="ZelaSync Logo" 
+                className="h-10 w-10 rounded-lg"
+              />
               <span className="text-xl font-bold">ZelaSync</span>
             </div>
             <p className="text-muted-foreground mb-6 max-w-md">

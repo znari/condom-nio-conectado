@@ -1,28 +1,43 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Play, Shield, Clock, HeadphonesIcon } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useParallax } from "@/hooks/useScrollAnimation";
 
 const HeroSection = () => {
+  const { ref: parallaxRef, offset } = useParallax(0.3);
+
   const scrollToFeatures = () => {
     document.getElementById("features")?.scrollIntoView({ behavior: "smooth" });
   };
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-background via-background to-primary/5">
-      {/* Animated background elements */}
+    <section ref={parallaxRef} className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-background via-background to-primary/5">
+      {/* Animated background elements with parallax */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-primary/5 rounded-full blur-3xl animate-pulse delay-1000" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-primary/5 to-transparent rounded-full blur-3xl" />
+        <div 
+          className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-glow-pulse"
+          style={{ transform: `translateY(${offset * 0.5}px)` }}
+        />
+        <div 
+          className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-primary/5 rounded-full blur-3xl animate-glow-pulse"
+          style={{ transform: `translateY(${offset * 0.3}px)`, animationDelay: '1.5s' }}
+        />
+        <div 
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-primary/5 to-transparent rounded-full blur-3xl"
+          style={{ transform: `translate(-50%, -50%) translateY(${offset * 0.2}px)` }}
+        />
       </div>
 
-      {/* Grid pattern overlay */}
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(59,130,246,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(59,130,246,0.03)_1px,transparent_1px)] bg-[size:100px_100px]" />
+      {/* Grid pattern overlay with parallax */}
+      <div 
+        className="absolute inset-0 bg-[linear-gradient(rgba(59,130,246,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(59,130,246,0.03)_1px,transparent_1px)] bg-[size:100px_100px]"
+        style={{ transform: `translateY(${offset * 0.1}px)` }}
+      />
 
       <div className="container mx-auto px-4 py-20 relative z-10">
         <div className="max-w-5xl mx-auto text-center">
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-8 animate-fade-in">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-8 animate-fade-up">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
@@ -31,7 +46,7 @@ const HeroSection = () => {
           </div>
 
           {/* Main headline */}
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 animate-fade-in">
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 animate-fade-up" style={{ animationDelay: '0.1s' }}>
             <span className="bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
               Gestão Condominial
             </span>
@@ -42,15 +57,15 @@ const HeroSection = () => {
           </h1>
 
           {/* Subtitle */}
-          <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-10 animate-fade-in">
+          <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-10 animate-fade-up" style={{ animationDelay: '0.2s' }}>
             Centralize chamados de manutenção, gerencie prestadores de serviço e controle 
             custos em uma única plataforma moderna e intuitiva. Transforme a gestão do seu 
             condomínio com tecnologia de ponta.
           </p>
 
           {/* CTAs */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16 animate-fade-in">
-            <Button asChild size="lg" className="text-lg px-8 py-6 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all duration-300">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16 animate-fade-up" style={{ animationDelay: '0.3s' }}>
+            <Button asChild size="lg" className="text-lg px-8 py-6 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all duration-300 hover:scale-105">
               <Link to="/cadastro">
                 Cadastre seu Condomínio
                 <ArrowRight className="ml-2 h-5 w-5" />
@@ -67,28 +82,30 @@ const HeroSection = () => {
             </Button>
           </div>
 
-          {/* Trust badges */}
-          <div className="flex flex-wrap justify-center gap-6 md:gap-10 animate-fade-in">
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Clock className="h-5 w-5 text-primary" />
-              <span className="text-sm">Aprovação em 24h</span>
-            </div>
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Shield className="h-5 w-5 text-primary" />
-              <span className="text-sm">100% Seguro</span>
-            </div>
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <HeadphonesIcon className="h-5 w-5 text-primary" />
-              <span className="text-sm">Suporte Dedicado</span>
-            </div>
+          {/* Trust badges with staggered animation */}
+          <div className="flex flex-wrap justify-center gap-6 md:gap-10">
+            {[
+              { icon: Clock, text: "Aprovação em 24h", delay: "0.4s" },
+              { icon: Shield, text: "100% Seguro", delay: "0.5s" },
+              { icon: HeadphonesIcon, text: "Suporte Dedicado", delay: "0.6s" },
+            ].map((badge, index) => (
+              <div 
+                key={index}
+                className="flex items-center gap-2 text-muted-foreground animate-fade-up"
+                style={{ animationDelay: badge.delay }}
+              >
+                <badge.icon className="h-5 w-5 text-primary" />
+                <span className="text-sm">{badge.text}</span>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* Dashboard preview mockup */}
-        <div className="mt-20 max-w-6xl mx-auto animate-fade-in">
-          <div className="relative">
+        {/* Dashboard preview mockup with float animation */}
+        <div className="mt-20 max-w-6xl mx-auto animate-fade-up" style={{ animationDelay: '0.5s' }}>
+          <div className="relative animate-float-slow">
             {/* Glow effect */}
-            <div className="absolute inset-0 bg-gradient-to-t from-primary/20 via-primary/5 to-transparent rounded-2xl blur-2xl" />
+            <div className="absolute inset-0 bg-gradient-to-t from-primary/20 via-primary/5 to-transparent rounded-2xl blur-2xl animate-glow-pulse" />
             
             {/* Mockup container */}
             <div className="relative bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-xl rounded-2xl border border-primary/20 p-2 shadow-2xl shadow-primary/10">

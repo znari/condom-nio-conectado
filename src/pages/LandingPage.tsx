@@ -38,9 +38,11 @@ const LandingPage = () => {
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <Link to="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                <span className="text-lg font-bold text-primary">Z</span>
-              </div>
+              <img 
+                src="/favicon.png" 
+                alt="ZelaSync Logo" 
+                className="h-8 w-8 rounded-lg"
+              />
               <span className="text-lg font-bold">ZelaSync</span>
             </Link>
 

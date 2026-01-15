@@ -4,6 +4,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 
 const faqs = [
   {
@@ -37,10 +38,17 @@ const faqs = [
 ];
 
 const FAQSection = () => {
+  const { ref: headerRef, isVisible: headerVisible } = useScrollAnimation({ threshold: 0.2 });
+
   return (
     <section id="faq" className="py-24 bg-background relative overflow-hidden">
       <div className="container mx-auto px-4">
-        <div className="max-w-4xl mx-auto text-center mb-16">
+        <div 
+          ref={headerRef}
+          className={`max-w-4xl mx-auto text-center mb-16 transition-all duration-700 ${
+            headerVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+          }`}
+        >
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
             Perguntas{" "}
             <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
@@ -54,20 +62,31 @@ const FAQSection = () => {
 
         <div className="max-w-3xl mx-auto">
           <Accordion type="single" collapsible className="space-y-4">
-            {faqs.map((faq, index) => (
-              <AccordionItem
-                key={index}
-                value={`item-${index}`}
-                className="bg-gradient-to-br from-card/80 to-card/40 rounded-xl border border-border/50 px-6 data-[state=open]:border-primary/30 transition-colors duration-300"
-              >
-                <AccordionTrigger className="text-left hover:no-underline py-5">
-                  <span className="font-semibold pr-4">{faq.question}</span>
-                </AccordionTrigger>
-                <AccordionContent className="text-muted-foreground pb-5">
-                  {faq.answer}
-                </AccordionContent>
-              </AccordionItem>
-            ))}
+            {faqs.map((faq, index) => {
+              const { ref, isVisible } = useScrollAnimation({ threshold: 0.2 });
+              return (
+                <div
+                  key={index}
+                  ref={ref}
+                  className={`transition-all duration-500 ${
+                    isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
+                  }`}
+                  style={{ transitionDelay: `${index * 75}ms` }}
+                >
+                  <AccordionItem
+                    value={`item-${index}`}
+                    className="bg-gradient-to-br from-card/80 to-card/40 rounded-xl border border-border/50 px-6 data-[state=open]:border-primary/30 transition-colors duration-300"
+                  >
+                    <AccordionTrigger className="text-left hover:no-underline py-5">
+                      <span className="font-semibold pr-4">{faq.question}</span>
+                    </AccordionTrigger>
+                    <AccordionContent className="text-muted-foreground pb-5">
+                      {faq.answer}
+                    </AccordionContent>
+                  </AccordionItem>
+                </div>
+              );
+            })}
           </Accordion>
         </div>
       </div>
